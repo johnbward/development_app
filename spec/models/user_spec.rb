@@ -3,8 +3,8 @@ require 'spec_helper'
 describe User do
 
   before do
-    @user = User.new(name: "Example User", email: "user@example.com", 
-                    password: "foobar", password_confirmation: "foobar") 
+    @user = User.new(name: "Example User", email: "user@example.com",
+                    password: "foobar", password_confirmation: "foobar")
   end
 
   subject { @user }
@@ -16,8 +16,19 @@ describe User do
   it { should respond_to(:password_confirmation) }
   it { should respond_to(:remember_token) }
   it { should respond_to(:authenticate) }
+  it { should respond_to(:admin) }
 
   it { should be_valid }
+  it { should_not be_admin }
+
+  describe "with admin attribute set to 'true'" do
+    before do
+      @user.save!
+      @user.toggle!(:admin)
+    end
+
+    it { should be_admin }
+  end
 
   describe "when name is not present" do
     before { @user.name = " " }
@@ -34,7 +45,7 @@ describe User do
     it { should_not be_valid }
   end
 
-  describe "when the email format is invalid" do
+  describe "when email format is invalid" do
     it "should be invalid" do
       addresses = %w[user@foo,com user_at_foo.org example.user@foo
                    foo@bar_baz.com foo@bar+baz.com]
@@ -44,7 +55,7 @@ describe User do
       end
     end
   end
-  
+
   describe "when email format is valid" do
     it "should be valid" do
       addresses = %w[user@foo.COM A_US-ER@f.b.org frst.lst@foo.jp a+b@baz.cn]
@@ -54,7 +65,7 @@ describe User do
       end
     end
   end
-  
+
   describe "when email address is already taken" do
     before do
       user_with_same_email = @user.dup
@@ -95,9 +106,8 @@ describe User do
       let(:user_for_invalid_password) { found_user.authenticate("invalid") }
       specify { expect(user_for_invalid_password).to be_false }
     end
-
   end
-   
+
   describe "remember token" do
     before { @user.save }
     its(:remember_token) { should_not be_blank }
